@@ -2,13 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const expressJWT = require('express-jwt');
-const delilah = require('./controller/routes/delilahRoutes');
+const product = require('./controller/routes/product');
+const user = require('./controller/routes/user')
 
 require('dotenv').config();
 
 const app = express();
 
-app.use('/delilah', delilah);
+app.use('/api/product', product);
 
 var JWTSecret = process.env.JWT_SECRET;
 
