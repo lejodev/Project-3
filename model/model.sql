@@ -2,14 +2,15 @@ DROP DATABASE IF EXISTS DelilahResto;
 CREATE DATABASE DelilahResto;
 USE DelilahResto;
 CREATE TABLE user (
-    userId INT(10) NOT NULL AUTO_INCREMENT,
+    id INT(10) NOT NULL AUTO_INCREMENT,
     fullName VARCHAR(100),
     userName VARCHAR(50),
-    userPassword VARCHAR(50),
+    password VARCHAR(50),
     email VARCHAR(100),
-    phone INT(20),
-    userAddress VARCHAR(100),
-    PRIMARY KEY (userId)
+    phone BIGINT(20),
+    address VARCHAR(100),
+    isAdmin BOOLEAN,
+    PRIMARY KEY (id)
 ) ENGINE = INNODB;
 
 CREATE TABLE product 
@@ -18,6 +19,27 @@ CREATE TABLE product
     name VARCHAR(150),
     price DECIMAL(9,2),
     PRIMARY KEY(id)
+) ENGINE = INNODB;
+
+CREATE TABLE `order` 
+(
+    id INT(10) NOT NULL,
+    status ENUM('new', 'confirmed', 'preparing', 'sending', 'cancelled', 'delivered'),
+    hour TIME,
+    paymentMethod ENUM('cash', 'credit card', 'bitcoin'),
+    PRIMARY KEY (id, hour)
+) ENGINE = INNODB;
+
+CREATE TABLE map_order_product 
+(
+    id INT(10) NOT NULL AUTO_INCREMENT,
+    orderId INT(10),
+    productId INT(10),
+    amount INT(10),
+    total DECIMAL(9,2),
+    PRIMARY KEY (id),
+    FOREIGN KEY(orderId) REFERENCES `order`(id),
+    FOREIGN KEY(productId) REFERENCES product(id)
 ) ENGINE = INNODB;
 
 INSERT INTO product(name, price) VALUES

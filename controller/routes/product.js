@@ -1,7 +1,7 @@
 const express = require("express");
-const { type } = require("os");
 const router = express.Router();
 const sequelize = require("./connection");
+const checkRole = require('../middlewares/checkRole')
 
 router.use(express.json());
 
@@ -17,7 +17,22 @@ router.get("/", (req, res) => {
     });
 });
 
-router.post("/", (req, res) => {
+router.get('/:id', async(req, res) => {
+
+  const product = await sequelize.query(`SELECT * FROM product WHERE id = :id`,{
+    type: sequelize.QueryTypes.SELECT,
+    replacements : {id : req.params.id}
+  });
+
+  if (product.length > 0) {
+    res.status(200).send(product);
+  } else {
+    res.status(404).send(`Product with id : ${req.params.id} not found`);
+  }
+
+})
+
+router.post("/", checkRole, (req, res) => {
   // console.log(req.body);
   sequelize
     .query(
@@ -25,7 +40,6 @@ router.post("/", (req, res) => {
       { type: sequelize.QueryTypes.INSERT }
     )
     .then(() => {
-      console.log(req.body);
       res.status(201).send('Producto añadido satisfactoriamente');
     })
     .catch((err) => {
@@ -33,7 +47,7 @@ router.post("/", (req, res) => {
     });
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", checkRole, async (req, res) => {
 
     var product = await sequelize.query(`SELECT * FROM product where id = ${req.params.id}`, {
         type : sequelize.QueryTypes.SELECT
@@ -41,8 +55,9 @@ router.put("/:id", async (req, res) => {
 
     if (product.length > 0) {
         console.log(req.params);
-        await sequelize.query(`UPDATE product SET price = :price WHERE id = ${req.params.id}`,{
+        await sequelize.query(`UPDATE product SET name = :name , price = :price WHERE id = ${req.params.id}`,{
             replacements: {
+                name : req.body.name,
                 price : req.body.price
             },
             type: sequelize.QueryTypes.UPDATE
@@ -53,7 +68,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', checkRole, async(req, res) => {
     const product = await sequelize.query(`SELECT * FROM product WHERE id = ${req.params.id}`, {
         type : sequelize.QueryTypes.SELECT
     });
@@ -65,6 +80,10 @@ router.delete('/:id', async(req, res) => {
     } else {
         res.status(404).json({message: "Product not found"});
     }
-})
+});
 
 module.exports = router;
+
+// ========== PENDING ==========
+
+//  Make first query (SELECT) importable from another file to provide code reusability
