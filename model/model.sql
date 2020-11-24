@@ -1,6 +1,8 @@
 DROP DATABASE IF EXISTS DelilahResto;
 CREATE DATABASE DelilahResto;
 USE DelilahResto;
+
+-- Table that stores application´s users
 CREATE TABLE user (
     id INT(10) NOT NULL AUTO_INCREMENT,
     fullName VARCHAR(100),
@@ -13,6 +15,7 @@ CREATE TABLE user (
     PRIMARY KEY (id)
 ) ENGINE = INNODB;
 
+-- Table that stores restaurant´s products
 CREATE TABLE product 
 (
     id INT(10) NOT NULL AUTO_INCREMENT,
@@ -21,15 +24,19 @@ CREATE TABLE product
     PRIMARY KEY(id)
 ) ENGINE = INNODB;
 
+-- Table of orders performed by the restaurant´s users
 CREATE TABLE `order` 
 (
-    id INT(10) NOT NULL,
+    id INT(10) NOT NULL AUTO_INCREMENT,
+    userId INT(10) NOT NULL,
     status ENUM('new', 'confirmed', 'preparing', 'sending', 'cancelled', 'delivered'),
     hour TIME,
     paymentMethod ENUM('cash', 'credit card', 'bitcoin'),
-    PRIMARY KEY (id, hour)
+    PRIMARY KEY (id),
+    FOREIGN KEY (userId) REFERENCES user(id)
 ) ENGINE = INNODB;
 
+-- Intermediate table between product and order
 CREATE TABLE map_order_product 
 (
     id INT(10) NOT NULL AUTO_INCREMENT,

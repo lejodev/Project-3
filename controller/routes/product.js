@@ -1,85 +1,60 @@
 const express = require("express");
 const router = express.Router();
 const sequelize = require("./connection");
-const checkRole = require('../middlewares/checkRole')
+const checkRole = require("../middlewares/checkRole");
+
+const productService = require("../../services/product-service");
 
 router.use(express.json());
 
-router.get("/", (req, res) => {
-  sequelize
-    .query("select * from product", { type: sequelize.QueryTypes.SELECT })
-    .then((products) => {
-      res.json(products);
-      console.log(products);
+router.get("/", async (req, res) => {
+  productService.getProducts().then((products) => res.json(products));
+});
+
+router.get("/:id", async (req, res) => {
+  const product = await productService.getProductById(req.params.id);
+
+  product.length > 0
+    ? res.status(200).send(product)
+    : res.status(404).send(`Product with id ${req.params.id} not found`);
+});
+
+router.post("/", checkRole, async (req, res) => {
+  productService
+    .addProduct(req.body.name, req.body.price)
+    .then((resp) => {
+      res.status(201).send("Product added successfully");
     })
     .catch((err) => {
-      console.log(`Error getting products ${err}`);
+      res.status(400).send("Bad request, check your input");
     });
 });
 
-router.get('/:id', async(req, res) => {
-
-  const product = await sequelize.query(`SELECT * FROM product WHERE id = :id`,{
-    type: sequelize.QueryTypes.SELECT,
-    replacements : {id : req.params.id}
-  });
+router.put("/:id", checkRole, async (req, res, next) => {
+  const product = await productService.getProductById(req.params.id);
 
   if (product.length > 0) {
-    res.status(200).send(product);
+    productService
+      .updateById(req.body.name, req.body.price, req.params.id)
+      .then((resp) => {
+        console.log("WELL");
+      });
+    res.status(200).send("Price successfully changed");
   } else {
-    res.status(404).send(`Product with id : ${req.params.id} not found`);
+    res.status(400).send("This product doesn't exists in our store");
   }
-
-})
-
-router.post("/", checkRole, (req, res) => {
-  // console.log(req.body);
-  sequelize
-    .query(
-      `insert into product(name, price) VALUES('${req.body.name}',${req.body.price})`,
-      { type: sequelize.QueryTypes.INSERT }
-    )
-    .then(() => {
-      res.status(201).send('Producto añadido satisfactoriamente');
-    })
-    .catch((err) => {
-      console.log(`Error setting your product ${err}`);// Catch errors from api documentation
-    });
 });
 
-router.put("/:id", checkRole, async (req, res) => {
+router.delete("/:id", checkRole, async (req, res) => {
 
-    var product = await sequelize.query(`SELECT * FROM product where id = ${req.params.id}`, {
-        type : sequelize.QueryTypes.SELECT
-    });
+  const id = req.params.id;
+  console.log(req.params.id);
 
-    if (product.length > 0) {
-        console.log(req.params);
-        await sequelize.query(`UPDATE product SET name = :name , price = :price WHERE id = ${req.params.id}`,{
-            replacements: {
-                name : req.body.name,
-                price : req.body.price
-            },
-            type: sequelize.QueryTypes.UPDATE
-        })
-        res.status(200).send('Price successfully changed')
-    } else {
-        res.status(400).json({message: "This product doesn't exists in our store"})
-    }
-});
-
-router.delete('/:id', checkRole, async(req, res) => {
-    const product = await sequelize.query(`SELECT * FROM product WHERE id = ${req.params.id}`, {
-        type : sequelize.QueryTypes.SELECT
-    });
-
-    if (product.length > 0) {
-
-        await sequelize.query(`delete from product where id = ${req.params.id};`)
-        res.status(200).send('Product successfully deleted');
-    } else {
-        res.status(404).json({message: "Product not found"});
-    }
+  await productService.selectExists(id).then(() => {
+    res.status(200).send('Product successfully deleted');
+  }).catch(err =>{
+    res.status(400).send(`An error accurred while trying to delete the product: ${err}`);
+  });
 });
 
 module.exports = router;

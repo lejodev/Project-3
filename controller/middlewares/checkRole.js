@@ -15,11 +15,11 @@ const checkRole = function (req, res, next) {
         if (user.role === ADMIN_ROLE) {
             next();
         } else {
-            res.status(401).send('You are not authorized to do this operation')
+            res.status(401).send('You are not authorized to do this operation');
         }
 
     } else {
-        res.status(400).send('No permission')
+        res.status(400).send('No permission');
     }
 }
 
