@@ -86,6 +86,20 @@ const deleteProductById = async (id) => {
 
 };
 
+function validateProduct(order) {
+  if (
+    order !== null &&
+    order.hasOwnProperty("paymentMethod") &&
+    order.hasOwnProperty("products") &&
+    order.products !== null &&
+    order.products.length > 0
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 const createProduct = () => {};
 
 module.exports = {
@@ -96,4 +110,5 @@ module.exports = {
   updateById,
   selectExists,
   createProduct,
+  validateProduct
 };

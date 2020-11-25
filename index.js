@@ -9,6 +9,7 @@ const order = require('./controller/routes/order');
 require('dotenv').config();
 
 const app = express();
+app.use(express.json())
 
 const JWTSecret = process.env.JWT_SECRET;
 

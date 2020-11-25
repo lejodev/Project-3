@@ -14,7 +14,7 @@ router.use(express.json());
 router.post("/", async (req, res, next) => {
   const order = req.body;
 
-  if (validateProduct(order)) {
+  if (productService.validateProduct(order)) {
     const token = req.headers.authorization.split(" ")[1]; //service
     const user = jwt.verify(token, JWTSecrest); //service
 
@@ -46,7 +46,24 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.put("/", checkRole, (req, res) => {});
+router.put("/:id", checkRole, async (req, res) => {
+
+  const orderId = req.params.id;
+  const orderStatus = req.body.orderStatus;
+  
+  const orderExists = await orderService.getOrderById(orderId);
+  console.log(orderExists);
+
+  if (orderExists) {
+    orderService.updateOrder(orderId, orderStatus).then(() => {
+      res.status(200).send('Order status modified successfully')
+    }).catch(err => {
+      res.status(400).send(`Some error has occurred, please check your input. ERROR: ${err} `)
+    });
+  } else {
+    res.status(404).send(`Order with id ${req.params.id} doesn´t exist`);
+  }
+});
 
 router.get("/", async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -61,37 +78,25 @@ router.get("/", async (req, res) => {
     orders = await orderService.myOrder(userId);
   }
 
-  const result = null;
-
-  await Promise.all(orders).then(async orders => {
-    orders.map(order => {
-      order.description = orderService.orderDescription(order.userId, order['hour']);
-      order.total = orderService.totalOrder(order.userId, order['hour'])
+  const response = await Promise.all(
+    orders.map(async (order) => {
+      // console.log(order);
+      order["description"] = await orderService.orderDescription(
+        order.userId,
+        order["hour"]
+      );
+      const total = await orderService.totalOrder(order.userId, order["hour"])
+      order["total"] = total[0]["total"];
+      delete order.userId;
+      return order;
     })
-  }).then(() => {
-    res.send(orders)
-    console.log(orders);
-  }).catch(err => {
-    console.log(err);
-  })
+  );
 
-
-
-
-});
-
-function validateProduct(order) {
-  if (
-    order !== null &&
-    order.hasOwnProperty("paymentMethod") &&
-    order.hasOwnProperty("products") &&
-    order.products !== null &&
-    order.products.length > 0
-  ) {
-    return true;
+  if (response.length >= 1) {
+    res.status(200).json(response)
   } else {
-    return false;
+    res.status(200).send('You have no orders');
   }
-}
+});
 
 module.exports = router;

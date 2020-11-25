@@ -39,7 +39,7 @@ const createOrder = async (user, paymentMethod, products) => {
 };
 
 const myOrder = async (userId) => {
-    return await sequelize.query("select status, hour, order.id, paymentMethod, userName, address from `order` inner join user on `order`.userId = user.id where userId =" + userId, {
+    return await sequelize.query("select status, hour, order.id, paymentMethod, userName, user.id as userId, address from `order` inner join user on `order`.userId = user.id where userId =" + userId, {
         type: sequelize.QueryTypes.SELECT
     })
 }
@@ -51,32 +51,40 @@ const detailedOrders = async () => {
 }
 
 const totalOrder = async (id, hour) => {
-    const result = await sequelize.query("select sum(total) from `order` inner join map_order_product on map_order_product.orderId = order.id inner join product on map_order_product.productId = product.id where hour = :hour and userId = :id",{
+    return await sequelize.query("select sum(total) as total from `order` inner join map_order_product on map_order_product.orderId = order.id inner join product on map_order_product.productId = product.id where hour = :hour and userId = :id",{
         replacements : {
             hour: hour,
             id: id
         },
         type: sequelize.QueryTypes.SELECT
-    }).then(result => {
-        console.log(result);
-        return result;
     })
-
-    // console.log(result);
-
 }
 
 const orderDescription = async (userId, hour) => {
-    const result =  await sequelize.query("select amount, name from `order` inner join map_order_product on map_order_product.orderId = order.id inner join product on map_order_product.productId = product.id where hour = " + '"' + hour + '"' + " and userId = " + userId, {
+    return await sequelize.query("select amount, name from `order` inner join map_order_product on map_order_product.orderId = order.id inner join product on map_order_product.productId = product.id where hour = " + '"' + hour + '"' + " and userId = " + userId, {
         type: sequelize.QueryTypes.SELECT
-    }).then(result => {
-        console.log(result);
-        return result
+    });
+}
+
+const getOrderById = async (id) => {
+    const result = await sequelize.query("select * from `order` where id = :id", {
+        type: sequelize.QueryTypes.SELECT,
+        replacements: {
+            id: id
+        }
     })
-    
-    // console.log(result);
-    console.log('OFF');
-    // return result;
+
+     return result.length === 1
+}
+
+const updateOrder = async (orderId, orderStatus)  => {
+    return sequelize.query("UPDATE `order` SET status = :status where id = :id", {
+        replacements: {
+            id: orderId,
+            status: orderStatus
+        },
+        type: sequelize.QueryTypes.UPDATE
+    })
 }
 
 module.exports = {
@@ -84,5 +92,7 @@ module.exports = {
   myOrder,
   orderDescription,
   totalOrder,
-  detailedOrders
+  detailedOrders,
+  getOrderById,
+  updateOrder
 };

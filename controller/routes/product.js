@@ -14,9 +14,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const product = await productService.getProductById(req.params.id);
 
-  product.length > 0
-    ? res.status(200).send(product)
-    : res.status(404).send(`Product with id ${req.params.id} not found`);
+  product.length > 0 ? res.status(200).send(product): res.status(404).send(`Product with id ${req.params.id} not found`);
 });
 
 router.post("/", checkRole, async (req, res) => {
