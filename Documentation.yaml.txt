@@ -1,0 +1,441 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: "Delilah Resto"
+  description: "Delilah Resto restaurant API"
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    name: "Alejandro"
+    email: "alejandro.rv97@gmail.com"
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/lejodev/Delilah_Resto_API/1.0.0
+  - url: 'https://petstore.swagger.io/v2'
+tags:
+- name: "product"
+  description: "Operations over products"
+- name: "user"
+  description: "Operations over users"
+- name: "order"
+  description: "Operations over orders"
+paths:
+  /product:
+    get:
+      tags:
+      - "product"
+      summary: "Obtains products list"
+      description: "obtains  list of objects with all available products"
+      operationId: "getProduct"
+      responses:
+        "200":
+            description: "successful operation"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Product-list'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Product-list'
+        "401":
+          description: "you are not authorized to do this operation"
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - product
+      summary: "(Administrator) create a new product"
+      operationId: "createProduct"
+      responses:
+        '201':
+          description: "Product added successfully"
+        '400':
+          description: "Bad request, check your input"
+        '401':
+          description: "you are not authorized to do this operation"
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/Product'
+  '/product/{id}':
+    put:
+        tags:
+          - product
+        summary: "Modify product"
+        operationId: "updateProdut"
+        parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Numeric ID of the product"
+        responses: 
+          '200':
+            description: "Product successfully modified"
+          '400':
+            description: "This product doesn't exists in our store"
+          '401':
+            description: "you are not authorized to do this operation"
+        security:
+        - bearerAuth: []
+        requestBody:
+          $ref: '#/components/requestBodies/Product'
+    delete:
+      tags:
+       - product
+      summary: "Delete product"
+      operationId: "deleteProduct"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Numeric ID of the product"
+      responses: 
+        '200':
+          description: "Product successfully deleted"
+        '400':
+          description: "An error accurred while trying to delete the product"
+        '401':
+          description: "you are not authorized to do this operation"
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+       - product
+      summary: "Get a single product"
+      operationId: getSingleProduct
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Numeric ID of the product"
+      responses: 
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: "you are not authorized to do this operation"
+        '404':
+          description: "Product not found"
+      security:
+        - bearerAuth: []
+  /user:
+    post:
+      tags:
+        - user
+      summary: "User SignIn"
+      description: "Register user in the database"
+      operationId: "createUser"
+      responses: 
+        '200':
+          description: "SignedIn successfully"
+        '400':
+          description: "Error while signing in"
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        description: "User object"
+        required: true
+    get:
+      tags:
+        - user
+      summary: "User login"
+      description: "Register user in the database"
+      operationId: "loginUser"
+      responses: 
+        '200':
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlck5hbWUiOiJEdW1teTIwMjAiLCJmdWxsTmFtZSI6IkR1bW15IFVzZXIiLCJyb2xlIjowLCJpYXQiOjE2MDY1ODM1MDh9.DtHS8gMpQz-42v4EtdbCkNpdNrMBMETPBYG7GUMpie4"
+        '404':
+          description: "User not found"
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/login'
+        description: "User object"
+        required: true
+  /order:
+    post:
+      tags: 
+        - order
+      summary: "Create a new order"
+      description: "Crestes a new order passing an object with paymentMethod and a list of products"
+      responses:
+        '201':
+          description: "Order created successfully"
+        '400':
+          description: "Error processing your order, please verify your input"
+        '401':
+          description: "you are not authorized to do this operation"
+        '404':
+         description: "Some of the ids you provided, doesn´t exists"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        description: "User object"
+        required: true
+    get:
+      tags:
+        - order
+      summary: "Get orders"
+      description: "Get orders depending on user's role, if user, get its own orders, if admin, get all properties"
+      responses:
+        '200':
+          description: "Order status modified successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Orders'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Orders'
+        '401':
+          description: "you are not authorized to do this operation"
+        '404':
+          description: "You have no orders"
+      security:
+        - bearerAuth: []
+  '/order/{id}':
+    put:
+      tags:
+        - order
+      summary: "Modify order status"
+      description: "Modify the order status via order id"
+      responses:
+        '200':
+          description: "Order status modified successfully"
+        '400':
+          description: "Some error has occurred, please check yo"
+        '401':
+          description: "you are not authorized to do this operation"
+        '404':
+          description: "Order doesn´t exist"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Numeric ID of the product"
+      security:
+        - bearerAuth: []
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+components:
+  schemas:
+    login:
+      type: object
+      properties: 
+        userName:
+          type: string
+          example: dummyUserName
+        password:
+          type: string
+          example: dummyPassword123
+    User:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Name Last Name
+        userName:
+          type: string
+          example: FakeUserName88
+        password:
+          type: string
+          example: password1234
+        email:
+          type: string
+          description: User Address
+          example: someEmail@example.com
+        phone:
+          type: integer
+          format: int64
+          example: 123456789
+        address:
+          type: string
+          description: User Address
+          example: Dummy Street Buiding 6 APT 306
+        isAdmin:
+          type: boolean
+          example: true
+      xml:
+        name: Order
+    Order:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+        products:
+          type: array
+          items:
+            properties:
+              first product:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  amount:
+                    type: integer
+                    example: 2
+              second product:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  amount:
+                    type: integer
+                    example: 1
+              third product:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 7
+                  amount:
+                    type: integer
+                    example: 6
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          format: int64
+      xml:
+        name: Product
+    Product-list:
+      type: array
+      items:
+        properties:
+          id:
+            type: integer
+            format: int64
+          name:
+            type: string
+          price:
+            type: integer
+            format: int64
+      xml:
+        name: Product
+    Orders:
+      type: array
+      items:
+        properties:
+          status:
+            type: string
+            example: new
+          hour:
+            type: string
+            example: "16:05:29"
+          id:
+            type: integer
+            example: 6
+          paymentMethod:
+            type: string
+            example: credit card
+          fullName:
+            type: string
+            example: Dummy User
+          address:
+            type: string
+            example: Dummy Street Building 6 APT 306
+          description:
+            type: array
+            items:
+              properties:
+                first product:
+                  type: object
+                  properties:
+                    amount: 
+                      type: integer
+                      example: 6
+                    name:
+                      type: string
+                      example: Hot Dog
+                second product:
+                  type: object
+                  properties:
+                    amount: 
+                      type: integer
+                      example: 5
+                    name:
+                      type: string
+                      example: Cool Drink
+                third product:
+                  type: object
+                  properties:
+                    amount: 
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Chocolate sweet
+          total:
+            type: string
+            example: 102.65
+  requestBodies:
+    Orders:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Orders'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/Orders'
+      description: "Product object"
+      required: true
+    User:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/User'
+      description: "Product object"
+      required: true
+    Product:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/Product'
+      description: "Product object"
+      required: true
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+        type: http
+        scheme: bearer
+        bearerFormat: JWT

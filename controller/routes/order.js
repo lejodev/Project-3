@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const sequelize = require("./connection");
 const checkRole = require("../middlewares/checkRole");
 
 const productService = require("../../services/product-service");
@@ -95,7 +94,7 @@ router.get("/", async (req, res) => {
   if (response.length >= 1) {
     res.status(200).json(response)
   } else {
-    res.status(200).send('You have no orders');
+    res.status(404).send('You have no orders');
   }
 });
 

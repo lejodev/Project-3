@@ -8,6 +8,7 @@ const productService = require("../../services/product-service");
 router.use(express.json());
 
 router.get("/", async (req, res) => {
+  // Get the list of products
   productService.getProducts().then((products) => res.json(products));
 });
 
@@ -37,7 +38,7 @@ router.put("/:id", checkRole, async (req, res, next) => {
       .then((resp) => {
         console.log("WELL");
       });
-    res.status(200).send("Price successfully changed");
+    res.status(200).send("Product successfully modified");
   } else {
     res.status(400).send("This product doesn't exists in our store");
   }
